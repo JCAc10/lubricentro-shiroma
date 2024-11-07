@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard</title>
+</head>
+<body>
+  <h1>Dashboard</h1>
+
+  <h2>Marcas</h2>
+  <ul id="brandsList"></ul>
+  <button id="addBrandBtn">Añadir Marca</button>
+
+  <h2>Servicios</h2>
+  <ul id="servicesList"></ul>
+  <button id="addServiceBtn">Añadir Servicio</button>
+  <script>
+    let brandsData = [];
+    let servicesData = [];
+
+    document.addEventListener('DOMContentLoaded', () => {
+      loadBrands();
+      loadServices();
+    });
+
+    // Cargar las marcas desde el servidor PHP
+    function loadBrands() {
+      fetch('../json/server.php?type=brands')
+        .then(response => response.json())
+        .then(data => {
+          brandsData = data;
+          renderBrands();
+        });
+    }
+
+    // Cargar los servicios desde el servidor PHP
+    function loadServices() {
+      fetch('../json/server.php?type=services')
+        .then(response => response.json())
+        .then(data => {
+          servicesData = data;
+          renderServices();
+        });
+    }
+
+    // Mostrar las marcas en la interfaz
+    function renderBrands() {
+      const brandsList = document.getElementById('brandsList');
+      brandsList.innerHTML = '';
+      brandsData.forEach((brand, index) => {
+        brandsList.innerHTML += `<li>${brand.name} <button onclick="deleteBrand(${index})">Eliminar</button></li>`;
+      });
+    }
+
+    // Mostrar los servicios en la interfaz
+    function renderServices() {
+      const servicesList = document.getElementById('servicesList');
+      servicesList.innerHTML = '';
+      servicesData.forEach((service, index) => {
+        servicesList.innerHTML += `<li>${service.name} <button onclick="deleteService(${index})">Eliminar</button></li>`;
+      });
+    }
+
+    // Guardar las marcas en el servidor PHP
+    function saveBrands() {
+      fetch('../json/server.php?type=brands', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(brandsData),
+      })
+      .then(response => response.json())
+      .then(data => {
+        alert(data.message);
+        loadBrands();
+      });
+    }
+
+    // Guardar los servicios en el servidor PHP
+    function saveServices() {
+      fetch('../json/server.php?type=services', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(servicesData),
+      })
+      .then(response => response.json())
+      .then(data => {
+        alert(data.message);
+        loadServices();
+      });
+    }
+
+    // Añadir una nueva marca
+    document.getElementById("addBrandBtn").addEventListener("click", () => {
+      let newBrand = prompt("Ingresa nueva marca:");
+      if (newBrand) {
+        brandsData.push({ name: newBrand, models: [] });
+        saveBrands();
+      }
+    });
+
+    // Añadir un nuevo servicio
+    document.getElementById("addServiceBtn").addEventListener("click", () => {
+      let newService = prompt("Ingresa nuevo servicio:");
+      if (newService) {
+        servicesData.push({ name: newService });
+        saveServices();
+      }
+    });
+
+    // Eliminar una marca
+    function deleteBrand(index) {
+      if (brandsData.length > 1) {
+        brandsData.splice(index, 1);
+        saveBrands();
+      } else {
+        alert('Debe haber al menos una marca.');
+      }
+    }
+
+    // Eliminar un servicio
+    function deleteService(index) {
+      if (servicesData.length > 1) {
+        servicesData.splice(index, 1);
+        saveServices();
+      } else {
+        alert('Debe haber al menos un servicio.');
+      }
+    }
+  </script>
+</body>
+</html>
